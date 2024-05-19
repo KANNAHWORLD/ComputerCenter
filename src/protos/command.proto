@@ -1,0 +1,30 @@
+syntax="proto3";
+
+message NodeDetails {
+    string ip = 1;
+    string port = 2;
+    string information = 3;
+}
+
+message CLOutput{
+    string output = 1;
+}
+
+message CLInput {
+    string input = 1;
+}
+
+message Empty {
+
+}
+
+service CommandLine{
+    rpc registerNode(NodeDetails) returns (Empty) {}
+    rpc ping(Empty) returns(Empty) {}
+    rpc getNodes(Empty) returns(CLOutput) {}
+    rpc runCommand(CLInput) returns(CLOutput) {}
+}
+
+service NodeConnection{
+    rpc ping(Empty) returns (Empty) {}
+}
