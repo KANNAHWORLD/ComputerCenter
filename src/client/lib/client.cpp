@@ -20,6 +20,20 @@ class ClientCommandLine {
             std::cout << RPC_stat.error_code() << '\n';
         }
 
+        void runTerminal(){
+            ::CLInput input;
+            ::CLOutput output;
+            input.set_input("ls");
+            grpc::ClientContext CC;
+            std::unique_ptr<grpc::ClientReaderWriter< ::CLInput, ::CLOutput>> stream(_stub->runTerminal(&CC));
+            stream->Write(input);
+            // sleep(1); // sleep for 1 second (for testing purposes
+            while(stream->Read(&output)){
+                std::cout << output.output() << '\n';
+            }
+            stream->WritesDone();
+        }
+
     private:
         std::unique_ptr<::CommandLine::Stub> _stub;
 
@@ -28,5 +42,6 @@ class ClientCommandLine {
 int client_main(){
     ClientCommandLine CCLI(grpc::CreateChannel("localhost:8080", grpc::InsecureChannelCredentials()));
     CCLI.registerNode("localhost", "8080", "Sid's Macbook");
+    CCLI.runTerminal();
     return 0;
 }

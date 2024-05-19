@@ -1,3 +1,5 @@
 #include <string>
+#include <grpcpp/grpcpp.h>
+#include "command.grpc.pb.h"
 
-std::string run_system_command(std::string&);
+void run_system_terminal(::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* stream);

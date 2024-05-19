@@ -35,5 +35,4 @@ add_custom_command(
 )
 
 add_library(myproto ${PROTO_SOURCE_FILES})
-
-# target_link_libraries(myproto ${PROTOBUF_LIBRARIES})
+target_include_directories(myproto PUBLIC ${CMAKE_CURRENT_BINARY_DIR})

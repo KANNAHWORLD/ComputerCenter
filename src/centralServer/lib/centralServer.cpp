@@ -24,6 +24,7 @@
 #include "spinlock.h"
 #include "serverTerminal.h"
 #include "serverBackendServices.h"
+#include "sys_command.h"
 #include <grpcpp/server_builder.h>
 #include <unordered_set>
 #include <functional>
@@ -48,11 +49,16 @@ class CommandLineImp final : public CommandLine::Service {
             return ::grpc::Status::OK;
         }
 
-        virtual ::grpc::Status runCommand(::grpc::ServerContext* context, const ::CLInput* request, ::CLOutput* response) override {
-            std::cout << "Server: Running Command " << request->input() << "\n";
-            // response->set_output(runSystemCommand(request->input()));
+        virtual ::grpc::Status runTerminal(::grpc::ServerContext* context, ::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* stream) override {
+            std::cout << "Server: Starting and Running Terminal\n";
+            run_system_terminal(stream);
             return ::grpc::Status::OK;
         }
+        // virtual ::grpc::Status runTerminal(::grpc::ServerContext* context, const ::CLInput* request, grpc::ServerWriter<::CLOutput>* response) override {
+        //     std::cout << "Server: Running Command " << request->input() << "\n";
+        //     // response->set_output(runSystemCommand(request->input()));
+        //     return ::grpc::Status::OK;
+        // }
 };
 
 // Builds the server and begins running it

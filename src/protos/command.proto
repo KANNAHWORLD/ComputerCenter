@@ -22,7 +22,7 @@ service CommandLine{
     rpc registerNode(NodeDetails) returns (Empty) {}
     rpc ping(Empty) returns(Empty) {}
     rpc getNodes(Empty) returns(CLOutput) {}
-    rpc runCommand(CLInput) returns(CLOutput) {}
+    rpc runTerminal(stream CLInput) returns(stream CLOutput) {}
 }
 
 service NodeConnection{
