@@ -54,11 +54,6 @@ class CommandLineImp final : public CommandLine::Service {
             run_system_terminal(stream);
             return ::grpc::Status::OK;
         }
-        // virtual ::grpc::Status runTerminal(::grpc::ServerContext* context, const ::CLInput* request, grpc::ServerWriter<::CLOutput>* response) override {
-        //     std::cout << "Server: Running Command " << request->input() << "\n";
-        //     // response->set_output(runSystemCommand(request->input()));
-        //     return ::grpc::Status::OK;
-        // }
 };
 
 // Builds the server and begins running it
