@@ -80,7 +80,7 @@ class ClientCommandLine {
         std::unique_ptr<::CommandLine::Stub> _stub;
 
 };
-
+#define rstr kjlsdkjf
 int client_main(){
     ClientCommandLine CCLI(grpc::CreateChannel("localhost:8080", grpc::InsecureChannelCredentials()));
     // CCLI.registerNode("localhost", "8080", "Sid's Macbook");

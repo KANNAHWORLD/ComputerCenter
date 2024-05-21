@@ -64,8 +64,8 @@ void handle_terminal_output(::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* 
             bash_output.resize(bytes_read);
             client_out.set_output(bash_output);
             stream->Write(client_out);
-            client_out.set_output("\n DONE WITH OUTPUT \n");
-            stream->Write(client_out);
+            // client_out.set_output("\n DONE WITH OUTPUT \n");
+            // stream->Write(client_out);
             bytes_read = 0;
             
         } else if(bytes_read == -1) {
