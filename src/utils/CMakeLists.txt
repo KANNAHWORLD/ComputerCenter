@@ -1,7 +1,9 @@
-set(srcs lib/sys_command.cpp)
+set(srcs lib/sys_command.cpp
+        lib/stringOps.cpp)
 
 set(headers "include/spinlock.h"
-            "include/sys_command.h")
+            "include/sys_command.h"
+            "include/stringOps.h")
 
 include_directories(${CMAKE_SOURCE_DIR}/src/protos)
 

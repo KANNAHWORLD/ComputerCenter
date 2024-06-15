@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include "stringOps.h"
 
 /**
  * @brief Splits a string into substrings based on a delimiter
@@ -10,7 +11,7 @@
  * @param delim: The delimiter to split the string on
  * 
  */
-void split_string(const std::string& str, std::vector<std::string_view>& result, const char delim){
+void split_string(const std::string& str, std::vector<std::string_view>& result, const char delim = ' '){
     result.resize(0);
     result.reserve(10);
     int start = 0;
