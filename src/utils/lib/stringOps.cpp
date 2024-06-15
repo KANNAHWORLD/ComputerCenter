@@ -1,0 +1,52 @@
+#include <vector>
+#include <string>
+#include <utility>
+
+/**
+ * @brief Splits a string into substrings based on a delimiter
+ * Modifies result vector in place to contain the substrings, avoiding unnecessary copies/constructors/destructors
+ * @param str: The string to split
+ * @param result: vector that will be modified to contain the substrings
+ * @param delim: The delimiter to split the string on
+ * 
+ */
+void split_string(const std::string& str, std::vector<std::string_view>& result, const char delim){
+    result.resize(0);
+    result.reserve(10);
+    int start = 0;
+    int end = 0;
+
+    while((end = str.find(delim, start)) != std::string::npos){
+        result.emplace_back(str.data() + start, end - start);
+        start = end + 1;
+    }
+    result.emplace_back(str.data() + start, str.size() - start);
+}
+
+/**
+ * @brief Splits a string into substrings based on a delimiter
+ * @param str: The string to split
+ * @param delim: The delimiter to split the string on
+ * @return A vector containing the substrings as string_views
+ */
+std::vector<std::string_view> split_string(const std::string& str, const char delim = ' '){
+    std::vector<std::string_view> result;
+    result.reserve(10);
+    split_string(str, result, delim);
+    return std::move(result);
+}
+
+
+std::vector<std::string> split_string_inefficient(const std::string&& str, const char delim = ' '){
+    std::vector<std::string> result;
+    result.reserve(10);
+    int start = 0;
+    int end = 0;
+
+    while((end = str.find(delim, start)) != std::string::npos){
+        result.emplace_back(str.data() + start, end - start);
+        start = end + 1;
+    }
+    result.emplace_back(str.data() + start, str.size() - start);
+    return std::move(result);
+}
