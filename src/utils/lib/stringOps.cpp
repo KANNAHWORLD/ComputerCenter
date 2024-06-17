@@ -11,17 +11,23 @@
  * @param delim: The delimiter to split the string on
  * 
  */
-void split_string(const std::string& str, std::vector<std::string_view>& result, const char delim = ' '){
+void split_string(const std::string& str, std::vector<std::string_view>& result, const char delim = ' ') noexcept{
+    if(str.empty())
+        return;
     result.resize(0);
-    result.reserve(10);
+
     int start = 0;
     int end = 0;
+    auto str_data = str.data();
+    int val = 0;
 
     while((end = str.find(delim, start)) != std::string::npos){
-        result.emplace_back(str.data() + start, end - start);
+        val = end - start;
+        if(val > 0) [[likely]]
+            result.emplace_back(str_data + start, val);
         start = end + 1;
     }
-    result.emplace_back(str.data() + start, str.size() - start);
+    result.emplace_back(str_data + start, str.size() - start);
 }
 
 /**
@@ -30,7 +36,7 @@ void split_string(const std::string& str, std::vector<std::string_view>& result,
  * @param delim: The delimiter to split the string on
  * @return A vector containing the substrings as string_views
  */
-std::vector<std::string_view> split_string(const std::string& str, const char delim = ' '){
+[[nodiscard]] std::vector<std::string_view> split_string(const std::string& str, const char delim = ' ') noexcept{
     std::vector<std::string_view> result;
     result.reserve(10);
     split_string(str, result, delim);
@@ -38,14 +44,17 @@ std::vector<std::string_view> split_string(const std::string& str, const char de
 }
 
 
-std::vector<std::string> split_string_inefficient(const std::string&& str, const char delim = ' '){
+[[nodiscard]] std::vector<std::string> split_string_inefficient(const std::string& str, const char delim = ' ') noexcept{
+    if(str.empty())
+        return {};
     std::vector<std::string> result;
     result.reserve(10);
     int start = 0;
     int end = 0;
 
     while((end = str.find(delim, start)) != std::string::npos){
-        result.emplace_back(str.data() + start, end - start);
+        if(end-start > 0)
+            result.emplace_back(str.data() + start, end - start);
         start = end + 1;
     }
     result.emplace_back(str.data() + start, str.size() - start);

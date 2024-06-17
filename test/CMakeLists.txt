@@ -7,7 +7,10 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+
+include_directories(${CMAKE_SOURCE_DIR})
+
 # Now simply link against gtest or gtest_main as needed. Eg
 add_executable(test_util test_utils.cpp)
-target_link_libraries(test_util gtest_main)
+target_link_libraries(test_util gtest_main utils)
 add_test(NAME test_util COMMAND u_gtest)

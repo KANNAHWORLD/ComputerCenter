@@ -6,6 +6,16 @@
 
 ClientCommandLine::ClientCommandLine(std::shared_ptr<grpc::Channel> channel): _stub(CommandLine::NewStub(channel)) {};
 
+bool ClientCommandLine::newConnection(std::string_view& ip, std::string_view& port){
+    this->newConnection(std::string(ip), std::string(port));
+}
+
+bool ClientCommandLine::newConnection(std::string ip, const std::string port){
+    auto Channel = grpc::CreateChannel(ip.append(":").append(port), grpc::InsecureChannelCredentials());
+    this->_stub = CommandLine::NewStub(Channel);
+    this->ping();
+}
+
 /**
  * Ping the server to make sure it is still active
  */

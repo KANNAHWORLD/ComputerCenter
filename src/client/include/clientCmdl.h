@@ -5,7 +5,6 @@
 
 class ClientCommandLine {
     private:
-
         /**
          * Stores the stub for accessing the gRPC server
          */
@@ -13,6 +12,10 @@ class ClientCommandLine {
 
     public:
         ClientCommandLine(std::shared_ptr<grpc::Channel> channel);
+        ClientCommandLine();
+
+        bool newConnection(std::string_view&, std::string_view&);
+        bool newConnection(std::string, std::string);
 
         /**
          * Ping the server to make sure it is still active

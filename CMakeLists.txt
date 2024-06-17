@@ -8,6 +8,13 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(BENCHMARK_USE_BUNDLED_GTEST OFF)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 # Fetch and configure protobuf
 include(FetchContent)
@@ -63,6 +70,8 @@ include_directories(${CMAKE_SOURCE_DIR}/src/utils/include)
 # Name of executable
 add_executable(main ${SOURCE_FILES})
 
+add_subdirectory(test)
+
 
 # Name of executable
 add_executable(mainBenchmark ${BENCHMARK_SOURCE_FILES})
@@ -75,4 +84,5 @@ target_link_libraries(main clientlib
 							utils)
 
 # Link mainBenchmark vs the source library
-target_link_libraries(mainBenchmark benchmark::benchmark)
+target_link_libraries(mainBenchmark benchmark::benchmark
+									utils)
