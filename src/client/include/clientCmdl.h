@@ -10,22 +10,71 @@ class ClientCommandLine {
          */
         std::unique_ptr<::CommandLine::Stub> _stub;
 
+        /**
+         * Stores if the connection is active
+         */
+        bool _connectionActive;
+
+        /**
+         * Stores the connection IP address and port
+         */
+        std::string _connectionIpPort;
+
+        /**
+         * Changes state of ClientCommandLine to active or inactive after each stub call
+         * Maintains the connection state
+         * @param status The status of the last gRPC call
+         * @returns void
+         */
+        __header_always_inline void updateConnectionState(const ::grpc::Status& status){
+            this->_connectionActive = status.ok();
+        }
+
     public:
         ClientCommandLine(std::shared_ptr<grpc::Channel> channel);
         ClientCommandLine();
 
-        bool newConnection(std::string_view&, std::string_view&);
-        bool newConnection(std::string, std::string);
+        /**
+         * Establishes a new connection with the server.
+         * Creates a new _stub object with the given server IP and port.
+         * Pings the server to make sure it is active
+         * @param ip The IP address of the server
+         * @param port The port number of the server
+         * @return True if the connection is successful, false otherwise
+         */
+        // bool newConnection(std::string&&, std::string&&, bool);
+        bool newConnection(std::string&&, const std::string&&);
+
+        __header_always_inline bool newConnection(std::string& ip, std::string& port){
+            return this->newConnection(std::string(ip), std::string(port));
+        }
+
+        __header_always_inline bool newConnection(const std::string_view& ip, const std::string_view& port){
+            return this->newConnection(std::string(ip), std::string(port));
+        }
 
         /**
          * Ping the server to make sure it is still active
          */
-        ::grpc::Status ping();
+        const ::grpc::Status ping();
 
         /**
-         * registers 
+         * @returns if the current connection is active (last ping worked)
+         * 
          */
-        void registerNode(std::string&& ip, std::string&& port, std::string&& info);
+        __header_always_inline bool connectionActive() const noexcept {
+            return this->_connectionActive;
+        }
+
+        /**
+         * registers nodes into the server details. This serves the purpose
+         * of knowing which nodes are connected to the server and can be accessed
+         * @param must be of type std::string or std::string_view
+         */
+
+        template <typename T>
+        void registerNode(const T&&, const T&&, const T&&);
+        
 
         /**
          * Runs the terminal for sending commands to the server and receiving outputs.

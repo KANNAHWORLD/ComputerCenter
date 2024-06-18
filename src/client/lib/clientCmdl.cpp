@@ -6,41 +6,50 @@
 
 ClientCommandLine::ClientCommandLine(std::shared_ptr<grpc::Channel> channel): _stub(CommandLine::NewStub(channel)) {};
 
-bool ClientCommandLine::newConnection(std::string_view& ip, std::string_view& port){
-    this->newConnection(std::string(ip), std::string(port));
-}
-
-bool ClientCommandLine::newConnection(std::string ip, const std::string port){
+bool ClientCommandLine::newConnection(std::string&& ip, const std::string&& port){
     auto Channel = grpc::CreateChannel(ip.append(":").append(port), grpc::InsecureChannelCredentials());
     this->_stub = CommandLine::NewStub(Channel);
-    this->ping();
+    if(::grpc::Status::OK.ok() == this->ping().ok()){
+        this->updateConnectionState(::grpc::Status::OK);
+        this->_connectionIpPort = std::move(ip);
+        return true;
+    }
+    return false;
 }
 
 /**
  * Ping the server to make sure it is still active
  */
-::grpc::Status ClientCommandLine::ping(){
+[[nodiscard]] const ::grpc::Status ClientCommandLine::ping(){
     ::Empty empty;
     ::Empty reply;
     grpc::ClientContext CC;
-    return grpc::Status::OK;
+    auto response_status = _stub->ping(&CC, empty, &reply);
+    this->updateConnectionState(response_status);
+    return response_status;
 }
 
 /**
  * registers 
  */
-void ClientCommandLine::registerNode(std::string&& ip, std::string&& port, std::string&& info){
-            ::NodeDetails newNodeDetails;
-            newNodeDetails.set_ip(ip);
-            newNodeDetails.set_port(port);
-            newNodeDetails.set_information(info);
+template <typename T>
+void ClientCommandLine::registerNode(const T&& ip, const T&& port, const T&& info){
+    
+    static_assert(std::is_same<T, std::string>::value || std::is_same<T, std::string_view>::value);
 
-            grpc::ClientContext CC;
-            ::Empty reply;
+    ::NodeDetails newNodeDetails;
+    newNodeDetails.set_ip(ip);
+    newNodeDetails.set_port(port);
+    newNodeDetails.set_information(info);
 
-            grpc::Status RPC_stat = _stub->registerNode(&CC, newNodeDetails, &reply);
-            std::cout << RPC_stat.error_code() << '\n';
-        }
+    grpc::ClientContext CC;
+    ::Empty reply;
+
+    grpc::Status RPC_stat = _stub->registerNode(&CC, newNodeDetails, &reply);
+    this->updateConnectionState(RPC_stat);
+
+    std::cout << RPC_stat.error_code() << '\n';
+}
 
 /**
  * Runs the terminal for sending commands to the server and receiving outputs.
@@ -69,9 +78,7 @@ void ClientCommandLine::runTerminal(){
     
     // Set quit flag to quit the output monitor thread
     quit_flag.store(true, std::memory_order_relaxed);
-    sleep(2);
     stream->WritesDone();
-    serverOutputManager.join();
     std::cout << "Terminal session ended.\n";
 }
 
