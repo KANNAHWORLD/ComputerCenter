@@ -11,13 +11,13 @@
  * @param delim: The delimiter to split the string on
  * 
  */
-void split_string(const std::string& str, std::vector<std::string_view>& result, const char delim = ' ') noexcept{
+void split_string(const std::string& str, std::vector<std::string_view>& result, const char delim) noexcept{
     if(str.empty())
         return;
     result.resize(0);
 
     int start = 0;
-    int end = 0;
+    size_t end = 0;
     auto str_data = str.data();
     int val = 0;
 
@@ -36,7 +36,7 @@ void split_string(const std::string& str, std::vector<std::string_view>& result,
  * @param delim: The delimiter to split the string on
  * @return A vector containing the substrings as string_views
  */
-[[nodiscard]] std::vector<std::string_view> split_string(const std::string& str, const char delim = ' ') noexcept{
+[[nodiscard]] std::vector<std::string_view> split_string(const std::string& str, const char delim ) noexcept{
     std::vector<std::string_view> result;
     result.reserve(10);
     split_string(str, result, delim);
@@ -44,13 +44,13 @@ void split_string(const std::string& str, std::vector<std::string_view>& result,
 }
 
 
-[[nodiscard]] std::vector<std::string> split_string_inefficient(const std::string& str, const char delim = ' ') noexcept{
+[[nodiscard]] std::vector<std::string> split_string_inefficient(const std::string& str, const char delim ) noexcept{
     if(str.empty())
         return {};
     std::vector<std::string> result;
     result.reserve(10);
     int start = 0;
-    int end = 0;
+    size_t end = 0;
 
     while((end = str.find(delim, start)) != std::string::npos){
         if(end-start > 0)

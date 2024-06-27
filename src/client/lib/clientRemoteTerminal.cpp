@@ -2,25 +2,16 @@
 #include <iostream>
 #include <thread>
 #include "command.grpc.pb.h"
-#include "clientCmdl.h"
+#include "clientRemoteTerminal.h"
 
-ClientCommandLine::ClientCommandLine(std::shared_ptr<grpc::Channel> channel): _stub(CommandLine::NewStub(channel)) {};
+RemoteTerminal::RemoteTerminal(std::shared_ptr<grpc::Channel> channel): _stub(CommandLine::NewStub(channel)) {};
+RemoteTerminal::RemoteTerminal(): _connectionActive(false), _connectionIpPort("") {};
 
-bool ClientCommandLine::newConnection(std::string&& ip, const std::string&& port){
-    auto Channel = grpc::CreateChannel(ip.append(":").append(port), grpc::InsecureChannelCredentials());
-    this->_stub = CommandLine::NewStub(Channel);
-    if(::grpc::Status::OK.ok() == this->ping().ok()){
-        this->updateConnectionState(::grpc::Status::OK);
-        this->_connectionIpPort = std::move(ip);
-        return true;
-    }
-    return false;
-}
 
 /**
  * Ping the server to make sure it is still active
  */
-[[nodiscard]] const ::grpc::Status ClientCommandLine::ping(){
+[[nodiscard]] const ::grpc::Status RemoteTerminal::ping(){
     ::Empty empty;
     ::Empty reply;
     grpc::ClientContext CC;
@@ -29,27 +20,6 @@ bool ClientCommandLine::newConnection(std::string&& ip, const std::string&& port
     return response_status;
 }
 
-/**
- * registers 
- */
-template <typename T>
-void ClientCommandLine::registerNode(const T&& ip, const T&& port, const T&& info){
-    
-    static_assert(std::is_same<T, std::string>::value || std::is_same<T, std::string_view>::value);
-
-    ::NodeDetails newNodeDetails;
-    newNodeDetails.set_ip(ip);
-    newNodeDetails.set_port(port);
-    newNodeDetails.set_information(info);
-
-    grpc::ClientContext CC;
-    ::Empty reply;
-
-    grpc::Status RPC_stat = _stub->registerNode(&CC, newNodeDetails, &reply);
-    this->updateConnectionState(RPC_stat);
-
-    std::cout << RPC_stat.error_code() << '\n';
-}
 
 /**
  * Runs the terminal for sending commands to the server and receiving outputs.
@@ -60,7 +30,7 @@ void ClientCommandLine::registerNode(const T&& ip, const T&& port, const T&& inf
  * to signal the output monitor thread to stop. After sending all the commands,
  * it waits for 2 seconds and then signals the end of writes to the stream.
  */
-void ClientCommandLine::runTerminal(){
+void RemoteTerminal::runTerminal(){
 
     ::CLInput input;
     ::CLOutput output;
@@ -94,7 +64,7 @@ void ClientCommandLine::runTerminal(){
  * @param quit_flag A pointer to an atomic boolean flag indicating whether the
  *                  monitoring should be stopped.
  */
-void ClientCommandLine::terminalOutputMonitor(std::shared_ptr<grpc::ClientReaderWriter< ::CLInput, ::CLOutput>> stream, 
+void RemoteTerminal::terminalOutputMonitor(std::shared_ptr<grpc::ClientReaderWriter< ::CLInput, ::CLOutput>> stream, 
                             std::atomic<bool>* quit_flag) noexcept  {
 
             ::CLOutput output;

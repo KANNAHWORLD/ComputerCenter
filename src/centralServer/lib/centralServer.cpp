@@ -28,6 +28,7 @@
 #include <grpcpp/server_builder.h>
 #include <unordered_set>
 #include <functional>
+#include "centralServer.h"
 
 
 class CommandLineImp final : public CommandLine::Service {

@@ -18,7 +18,7 @@ void split_string(const std::string&, std::vector<std::string_view>&, const char
  * @param delim: The delimiter to split the string on
  * @return A vector containing the substrings as string_views
  */
-std::vector<std::string_view> split_string(const std::string& , const char) noexcept;
+std::vector<std::string_view> split_string(const std::string& , const char = ' ') noexcept;
 
 
-std::vector<std::string> split_string_inefficient(const std::string&, const char) noexcept;
+std::vector<std::string> split_string_inefficient(const std::string&, const char = ' ') noexcept;

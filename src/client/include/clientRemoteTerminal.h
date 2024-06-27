@@ -2,8 +2,9 @@
 #include <iostream>
 #include <thread>
 #include "command.grpc.pb.h"
+#include "typeCheck.h"
 
-class ClientCommandLine {
+class RemoteTerminal {
     private:
         /**
          * Stores the stub for accessing the gRPC server
@@ -31,8 +32,8 @@ class ClientCommandLine {
         }
 
     public:
-        ClientCommandLine(std::shared_ptr<grpc::Channel> channel);
-        ClientCommandLine();
+        RemoteTerminal(std::shared_ptr<grpc::Channel> channel);
+        RemoteTerminal();
 
         /**
          * Establishes a new connection with the server.
@@ -43,14 +44,21 @@ class ClientCommandLine {
          * @return True if the connection is successful, false otherwise
          */
         // bool newConnection(std::string&&, std::string&&, bool);
-        bool newConnection(std::string&&, const std::string&&);
+        template <typename T1, typename T2>
+        bool newConnection(T1&& ip, T2&& port){
 
-        __header_always_inline bool newConnection(std::string& ip, std::string& port){
-            return this->newConnection(std::string(ip), std::string(port));
-        }
+            static_assert(string_like<T1>::value, "\nIP must be a string or string_view\n");
+            static_assert(string_like<T2>::value, "\nPort must be a string or string_view\n");
 
-        __header_always_inline bool newConnection(const std::string_view& ip, const std::string_view& port){
-            return this->newConnection(std::string(ip), std::string(port));
+            std::string tip(ip);
+            auto Channel = grpc::CreateChannel(tip.append(":").append(port), grpc::InsecureChannelCredentials());
+            this->_stub = CommandLine::NewStub(Channel);
+            if(::grpc::Status::OK.ok() == this->ping().ok()){
+                this->updateConnectionState(::grpc::Status::OK);
+                this->_connectionIpPort = std::move(ip);
+                return true;
+            }
+            return false;
         }
 
         /**
@@ -73,8 +81,24 @@ class ClientCommandLine {
          */
 
         template <typename T>
-        void registerNode(const T&&, const T&&, const T&&);
-        
+        void registerNode(const T&& ip, const T&& port, const T&& info){
+            
+            static_assert(string_like<T>::value, "IP, Port and Info must be of type string or string_view");
+
+            ::NodeDetails newNodeDetails;
+            newNodeDetails.set_ip(ip);
+            newNodeDetails.set_port(port);
+            newNodeDetails.set_information(info);
+
+            grpc::ClientContext CC;
+            ::Empty reply;
+
+            grpc::Status RPC_stat = _stub->registerNode(&CC, newNodeDetails, &reply);
+            this->updateConnectionState(RPC_stat);
+
+            std::cout << RPC_stat.error_code() << '\n';
+        }
+
 
         /**
          * Runs the terminal for sending commands to the server and receiving outputs.

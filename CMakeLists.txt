@@ -72,16 +72,20 @@ add_executable(main ${SOURCE_FILES})
 
 add_subdirectory(test)
 
+add_dependencies(myproto grpc++)
+add_dependencies(clientlib myproto)
+add_dependencies(centralServer myproto)
+add_dependencies(utils myproto)
 
 # Name of executable
 add_executable(mainBenchmark ${BENCHMARK_SOURCE_FILES})
 
 # Link main vs the source library
-target_link_libraries(main clientlib 
+target_link_libraries(main PRIVATE clientlib 
 							centralServer 
-							grpc++ 
-							myproto 
-							utils)
+							grpc++
+							utils
+							myproto)
 
 # Link mainBenchmark vs the source library
 target_link_libraries(mainBenchmark benchmark::benchmark

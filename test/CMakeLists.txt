@@ -9,8 +9,28 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/src/client/include)
+file(GLOB CLIENT_SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/client/lib/clientlib.cpp)
+# include_directories(${CMAKE_SOURCE_DIR}/_deps/grpc-src/include)
 
 # Now simply link against gtest or gtest_main as needed. Eg
-add_executable(test_util test_utils.cpp)
-target_link_libraries(test_util gtest_main utils)
+add_executable(test_util 
+				test_utils.cpp)
+
+
+add_executable(test_server_client 
+				test_server_client.cpp)
+
+target_link_libraries(test_util 
+						gtest_main 
+						utils)
+
+target_link_libraries(test_server_client 
+						clientlib
+						gtest_main 
+						utils
+						grpc++
+						myproto)
+
 add_test(NAME test_util COMMAND u_gtest)
+add_test(NAME test_server_client COMMAND u_gtest)
