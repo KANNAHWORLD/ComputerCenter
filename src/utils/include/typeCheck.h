@@ -29,6 +29,27 @@ struct has_iterators {
     static constexpr bool value = has_begin<remove_ref_const_t<T>>::value && has_end<remove_ref_const_t<T>>::value; 
 };
 
+// Checks if a type of template argument is a string or string_view at compile time
+template <typename... T2>
+struct string_like : std::true_type {};
+
+template <typename T>
+struct string_like<T>{
+    static constexpr bool value = (
+    std::is_same< remove_ref_const_t<T>, std::string>::value || 
+    std::is_same<remove_ref_const_t<T>, std::string_view>::value
+    );
+};
+
+template <typename T, typename... T2>
+struct string_like<T, T2...>{
+    static constexpr bool value = string_like<T>::value && string_like<T2...>::value;
+};
+
+// Returns the size of an array at compile time
+template <typename T, int N>
+constexpr int array_size(T (&)[N]) { return N;}
+
 /**
  * Checks if a container holds a specific type
  * 
@@ -41,11 +62,21 @@ struct container_holds_type<C, T, std::void_t<typename remove_ref_const_t<C>::va
     static constexpr bool value = std::is_same<typename remove_ref_const_t<C>::value_type, T>::value;
 };
 
-template <typename T, typename = void>
-struct string_like : std::false_type {};
+/**
+ * Checks if a container holds a string-like type
+ */
+template <typename... T>
+struct container_holds_string_like : std::true_type {};
 
-template <typename T>
-struct string_like{
-    static constexpr bool value = std::is_same< remove_ref_const_t<T>, std::string>::value || std::is_same<T, std::string_view>::value;
-};
+template <typename C>
+struct container_holds_string_like<C, string_like<typename remove_ref_const_t<C>::value_type>> 
+: string_like<typename remove_ref_const_t<C>::value_type>
+{};
+
+template <typename C, typename... T>
+struct container_holds_string_like<C, T...>
+: std::conjunction<string_like<typename remove_ref_const_t<C>::value_type>, 
+                                container_holds_string_like<T...>> {};
+
+
 #endif

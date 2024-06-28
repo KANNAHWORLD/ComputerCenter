@@ -14,7 +14,7 @@ class RemoteTerminal {
         /**
          * Stores if the connection is active
          */
-        bool _connectionActive;
+        bool _connectionActive{false};
 
         /**
          * Stores the connection IP address and port
@@ -29,6 +29,10 @@ class RemoteTerminal {
          */
         __header_always_inline void updateConnectionState(const ::grpc::Status& status){
             this->_connectionActive = status.ok();
+            if(!this->_connectionActive){
+                this->_connectionIpPort.clear();
+                this->_stub = nullptr;
+            }
         }
 
     public:
@@ -47,15 +51,16 @@ class RemoteTerminal {
         template <typename T1, typename T2>
         bool newConnection(T1&& ip, T2&& port){
 
-            static_assert(string_like<T1>::value, "\nIP must be a string or string_view\n");
-            static_assert(string_like<T2>::value, "\nPort must be a string or string_view\n");
+            static_assert(string_like<T1, T2>::value, "\nIP and Port must be a string or string_view\n");
 
-            std::string tip(ip);
-            auto Channel = grpc::CreateChannel(tip.append(":").append(port), grpc::InsecureChannelCredentials());
+            std::string ipPort(ip);
+            ipPort.append(":").append(port);
+
+            auto Channel = grpc::CreateChannel(ipPort, grpc::InsecureChannelCredentials());
             this->_stub = CommandLine::NewStub(Channel);
-            if(::grpc::Status::OK.ok() == this->ping().ok()){
+            if(this->ping()){
                 this->updateConnectionState(::grpc::Status::OK);
-                this->_connectionIpPort = std::move(ip);
+                this->_connectionIpPort = std::move(ipPort);
                 return true;
             }
             return false;
@@ -64,7 +69,7 @@ class RemoteTerminal {
         /**
          * Ping the server to make sure it is still active
          */
-        const ::grpc::Status ping();
+        [[nodiscard]] bool ping();
 
         /**
          * @returns if the current connection is active (last ping worked)
@@ -80,10 +85,10 @@ class RemoteTerminal {
          * @param must be of type std::string or std::string_view
          */
 
-        template <typename T>
-        void registerNode(const T&& ip, const T&& port, const T&& info){
+        template <typename T, typename T2, typename T3>
+        int registerNode(T&& ip, T2&& port, T3&& info){
             
-            static_assert(string_like<T>::value, "IP, Port and Info must be of type string or string_view");
+            static_assert(string_like<T, T2, T3>::value, "IP, Port and Info must be of type string or string_view");
 
             ::NodeDetails newNodeDetails;
             newNodeDetails.set_ip(ip);
@@ -93,10 +98,20 @@ class RemoteTerminal {
             grpc::ClientContext CC;
             ::Empty reply;
 
+
+            if(!this->connectionActive()){
+                return 0;
+            }
+
             grpc::Status RPC_stat = _stub->registerNode(&CC, newNodeDetails, &reply);
             this->updateConnectionState(RPC_stat);
 
-            std::cout << RPC_stat.error_code() << '\n';
+            if(!RPC_stat.ok()){
+                std::cout << RPC_stat.error_message() << '\n';
+                return 0;
+            }
+
+            return 1;
         }
 
 

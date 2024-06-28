@@ -11,13 +11,17 @@ RemoteTerminal::RemoteTerminal(): _connectionActive(false), _connectionIpPort(""
 /**
  * Ping the server to make sure it is still active
  */
-[[nodiscard]] const ::grpc::Status RemoteTerminal::ping(){
+bool RemoteTerminal::ping(){
     ::Empty empty;
     ::Empty reply;
     grpc::ClientContext CC;
+    
+    if(_stub == nullptr)[[unlikely]]{
+        return false;
+    }
     auto response_status = _stub->ping(&CC, empty, &reply);
     this->updateConnectionState(response_status);
-    return response_status;
+    return response_status.ok();
 }
 
 

@@ -58,10 +58,10 @@ class CommandLineImp final : public CommandLine::Service {
 };
 
 // Builds the server and begins running it
-static inline void build_server(){
+static inline void build_server(const std::string& ip_port){
     // as of now, don't do anything
     grpc::ServerBuilder builder;
-    builder.AddListeningPort("localhost:8080", grpc::InsecureServerCredentials());
+    builder.AddListeningPort(ip_port, grpc::InsecureServerCredentials());
 
     CommandLineImp my_service;
     builder.RegisterService(&my_service);
@@ -78,12 +78,12 @@ static inline void build_server(){
  * This function starts the central server, performs necessary operations to
  * initialize the server.
  */
-void start_central_server(){
+void start_central_server(const std::string& ip_port){
     
     std::cout << "Central server started." << std::endl;
     load_nodes();
     // Build the server and run it
-    std::thread server_thread(build_server);
+    std::thread server_thread(build_server, ip_port);
     
     // Read in a variable to 
     // Start other actions here

@@ -9,7 +9,7 @@ int client_main(){
     std::string connection = "connect";
     std::string ip = "localhost";
     std::string port = "8080";
-    CCLI.new_terminal_command({connection, ip, port});
+    CCLI.new_terminal_command(std::vector<std::string>{connection, ip, port});
     // CCLI.new_terminal_command({"connect", "localhost", "8080"});
     return 0;
 }

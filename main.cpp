@@ -5,13 +5,13 @@
 #include <unistd.h>
 #include <filesystem>
 #include "sys_command.h"
+#include "centralServer.h"
 #include <fcntl.h>
 
 void function(){
     std::cout << "Hello from thread" << std::endl;
 }
 
-extern void start_central_server();
 extern int client_main();
 
 int main(int argc, char** argv) {

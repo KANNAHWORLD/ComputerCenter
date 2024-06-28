@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <atomic>
 #include "stdio.h"
+#include <csignal>
 
 #ifdef _WIN32
     #include <windows.h>
@@ -187,7 +188,8 @@ void run_system_terminal(::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* str
         
         // Kill the output managing thread eventually
         quit_flag.store(true, std::memory_order_relaxed);
-        terminal_output.join();
+        // terminal_output.join();
+        kill(pid, SIGKILL);
 
     #endif
 

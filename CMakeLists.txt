@@ -66,6 +66,7 @@ add_subdirectory(benchmark)
 add_subdirectory(src)
 
 include_directories(${CMAKE_SOURCE_DIR}/src/utils/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/centralServer/include)
 
 # Name of executable
 add_executable(main ${SOURCE_FILES})

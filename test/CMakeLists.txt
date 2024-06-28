@@ -9,6 +9,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/src/central_server/include)
 include_directories(${CMAKE_SOURCE_DIR}/src/client/include)
 file(GLOB CLIENT_SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/client/lib/clientlib.cpp)
 # include_directories(${CMAKE_SOURCE_DIR}/_deps/grpc-src/include)
@@ -26,6 +27,7 @@ target_link_libraries(test_util
 						utils)
 
 target_link_libraries(test_server_client 
+						centralServer
 						clientlib
 						gtest_main 
 						utils
