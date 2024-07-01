@@ -77,3 +77,25 @@ void RemoteTerminal::terminalOutputMonitor(std::shared_ptr<grpc::ClientReaderWri
             }
         }
 
+
+std::vector<::NodeDetails> RemoteTerminal::getNodes(){
+    ::Empty empty;
+    ::AllNodes reply;
+    grpc::ClientContext CC;
+    std::vector<::NodeDetails> nodes;
+    
+    if(_stub == nullptr)[[unlikely]]{
+        return nodes;
+    }
+
+    auto response_status = _stub->getNodes(&CC, empty, &reply);
+    this->updateConnectionState(response_status);
+    if(response_status.ok()){
+
+        for(int i = 0; i < reply.nodedetails_size(); i++){
+            nodes.push_back(reply.nodedetails(i));
+        }
+    }
+    return std::move(nodes);
+}
+

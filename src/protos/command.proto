@@ -18,10 +18,14 @@ message Empty {
 
 }
 
+message AllNodes {
+    repeated NodeDetails nodedetails = 1;
+}
+
 service CommandLine{
     rpc registerNode(NodeDetails) returns (Empty) {}
     rpc ping(Empty) returns(Empty) {}
-    rpc getNodes(Empty) returns(CLOutput) {}
+    rpc getNodes(Empty) returns(AllNodes) {}
     rpc runTerminal(stream CLInput) returns(stream CLOutput) {}
 }
 

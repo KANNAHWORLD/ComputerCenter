@@ -21,7 +21,9 @@ void save_nodes();
 bool add_new_compute_node(const std::string&, const std::string&, const std::string&) noexcept;
 
 // Retrieve all compute nodes in the system
-std::string retrieve_all_nodes();
+std::string string_retrieve_all_nodes();
+
+const std::unordered_set<ComputeNode, ComputeNodeHash>& retrieve_all_nodes();
 
 // Run a command on the system
 std::string run_system_command(std::string);

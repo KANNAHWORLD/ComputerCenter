@@ -126,6 +126,15 @@ class RemoteTerminal {
          */
         void runTerminal();
 
+        
+        /**
+         *  Gets all nodes that are connected to the server and accessible to the client
+         * @param: None
+         * @returns: A vector of NodeDetails objects
+         */
+
+        std::vector<::NodeDetails> getNodes();
+
     private:
 
         /**

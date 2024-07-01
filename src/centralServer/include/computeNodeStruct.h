@@ -9,6 +9,16 @@
 #include <string>
 
 /**
+ * @brief Hash functor to hash Compute Nodes
+*/
+struct ComputeNodeHash{
+    std::hash<std::string> string_hash_func;
+    std::size_t operator()(const ComputeNode& n) const {
+        return string_hash_func(n.get_ip()) ^ string_hash_func(n.get_port());
+    }
+};
+
+/**
  *
  * 
  * @brief Represents a compute node in the system.

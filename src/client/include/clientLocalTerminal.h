@@ -89,7 +89,16 @@ class LocalTerminal{
         }
 
         template <typename C>
-        int client_start_terminal(C&&) {return 1;}
+        int client_start_terminal(C&&) {
+
+            if(!CCLI.connectionActive()){
+                std::cout << "No connection to server\n";
+                return 0;
+            }
+            
+            CCLI.runTerminal();
+            return 1;
+        }
 
         template <typename C>
         int client_exit(C&&) {return 1;} 

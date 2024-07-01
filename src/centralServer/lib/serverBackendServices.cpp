@@ -7,16 +7,6 @@
 #include "serverBackendServices.h"
 
 
-/**
- * @brief Hash functor to hash Compute Nodes
-*/
-struct ComputeNodeHash{
-    std::hash<std::string> string_hash_func;
-    std::size_t operator()(const ComputeNode& n) const {
-        return string_hash_func(n.get_ip()) ^ string_hash_func(n.get_port());
-    }
-};
-
 // Stores all compute nodes that are available in the system
 static std::unordered_set<ComputeNode, ComputeNodeHash> nodes;
 static Spinlock node_lock;
@@ -89,7 +79,7 @@ bool add_new_compute_node(const std::string& ip, const std::string& port, const 
 /**
  * @brief Retrieves all compute nodes in the system
 */
-std::string retrieve_all_nodes(){
+std::string string_retrieve_all_nodes(){
     std::string all_nodes;
     all_nodes.reserve(1000);
     std::scoped_lock lock(node_lock);
@@ -102,4 +92,8 @@ std::string retrieve_all_nodes(){
         all_nodes += '\n';
     }
     return all_nodes;
+}
+
+const std::unordered_set<ComputeNode, ComputeNodeHash>& retrieve_all_nodes(){
+    return nodes;
 }
