@@ -46,7 +46,7 @@ class CommandLineImp final : public CommandLine::Service {
 
         virtual ::grpc::Status getNodes(::grpc::ServerContext* context, const ::Empty* request, ::AllNodes* response) override {
             std::cout << "Server: Getting Nodes.\n";
-            auto all_nodes = retrieve_all_nodes();
+            auto& all_nodes = retrieve_all_nodes();
             for(auto& node: all_nodes){
                 auto new_node = response->add_nodedetails();
                 new_node->set_ip(node.get_ip());

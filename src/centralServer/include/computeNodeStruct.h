@@ -9,16 +9,6 @@
 #include <string>
 
 /**
- * @brief Hash functor to hash Compute Nodes
-*/
-struct ComputeNodeHash{
-    std::hash<std::string> string_hash_func;
-    std::size_t operator()(const ComputeNode& n) const {
-        return string_hash_func(n.get_ip()) ^ string_hash_func(n.get_port());
-    }
-};
-
-/**
  *
  * 
  * @brief Represents a compute node in the system.
@@ -34,19 +24,27 @@ class ComputeNode {
         int id;         ///< The ID of the compute node.
 
     public:
-        // Constructor
-        ComputeNode(std::string ip, std::string port, std::string info = " ", int id = -1):
-            ip(std::move(ip)), port(std::move(port)), information(std::move(info)), id(id) 
+        
+        ComputeNode(const std::string_view& ip = "", const std::string_view& port = "", const std::string_view& info = " ", const int id = -1):
+            ip(ip), port(port), information(info), id(id) 
             {};
         
-        ComputeNode(std::string_view ip, std::string_view port, std::string_view info = " ", int id = -1):
-            ip(ip), port(port), information(info), id(id) 
+        ComputeNode(const ComputeNode& rhs) noexcept:
+            ip(rhs.ip), port(rhs.port), information(rhs.information), id(rhs.id)
             {};
         
         // Move constructor
         ComputeNode(ComputeNode&& rhs) noexcept:
             ip(std::move(rhs.ip)), port(std::move(rhs.port)), information(std::move(rhs.information)), id(rhs.id)
             {};
+
+        ComputeNode& operator=(const ComputeNode& rhs) noexcept{
+            this->ip = rhs.ip;
+            this->port = rhs.port;
+            this->information = rhs.information;
+            this->id = rhs.id;
+            return *this;
+        }
 
         // Move assignment operator
         ComputeNode& operator=(ComputeNode&& rhs) noexcept{
@@ -93,5 +91,16 @@ class ComputeNode {
             this->port = port;
         }
 };
+
+/**
+ * @brief Hash functor to hash Compute Nodes
+*/
+struct ComputeNodeHash{
+    std::hash<std::string> string_hash_func;
+    std::size_t operator()(const ComputeNode& n) const {
+        return string_hash_func(n.get_ip()) ^ string_hash_func(n.get_port());
+    }
+};
+
 
 #endif // COMPUTE_NODE_STRUCT_H
