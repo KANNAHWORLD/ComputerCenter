@@ -53,22 +53,15 @@ void handle_terminal_output(::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* 
     fcntl(pipe_id, F_SETFL, O_NONBLOCK);
 
     int bytes_read = 0;
-    int total_bytes_read = 0;
     // std::cout << "Handling terminal output on server side\n";
 
     do{
 
-        bytes_read = read(pipe_id, bash_output.data(), read_buffer_size - total_bytes_read);
-
+        bytes_read = read(pipe_id, bash_output.data(), read_buffer_size);
         if(bytes_read > 0){
-            
-            bash_output.resize(bytes_read);
-            client_out.set_output(bash_output);
+            client_out.set_output(std::string(bash_output.begin(), bash_output.begin() + bytes_read));
             stream->Write(client_out);
-            // client_out.set_output("\n DONE WITH OUTPUT \n");
-            // stream->Write(client_out);
             bytes_read = 0;
-            
         } else if(bytes_read == -1) {
             usleep(200);
         } else {
@@ -78,6 +71,12 @@ void handle_terminal_output(::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* 
     } while(!quit_flag->load(std::memory_order_relaxed));
 }
 
+
+static constexpr char 
+terminal_new_command_prompt_command[] = "echo cleint @ remote $:";
+
+static constexpr char
+terminal_background_wait[] = "\n wait \n";
 
 /**
  * @brief Executes a system terminal command.
@@ -157,6 +156,8 @@ void run_system_terminal(::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* str
                 std::cerr << "Error chaing stdin or stdout";
                 goto terminate;
             }
+            close(serverToBash[0]);
+            close(bashToServer[1]);
             execl("/bin/zsh", "/bin/zsh", NULL);
             // Process never reaches here unless goto is used
         terminate:
@@ -177,9 +178,11 @@ void run_system_terminal(::grpc::ServerReaderWriter< ::CLOutput, ::CLInput>* str
         std::thread terminal_output(handle_terminal_output, stream, bashToServer[0], &quit_flag);
 
         while(stream->Read(&client_in)){
-            std::cout << "Server: Running Command " << client_in.input().c_str() << ' ' << client_in.input().size() << "\n";
+            // std::cout << "Server: Running Command " << client_in.input().c_str() << ' ' << client_in.input().size() << "\n";
             write(serverToBash[1], client_in.input().c_str(), client_in.input().size());
-            write(serverToBash[1], "\n", 1);
+            write(serverToBash[1], terminal_background_wait, sizeof(terminal_background_wait) - 1);
+            write(serverToBash[1], terminal_new_command_prompt_command, sizeof(terminal_new_command_prompt_command) - 1);
+            write(serverToBash[1], terminal_background_wait, sizeof(terminal_background_wait) - 1);
         }
 
         close(serverToBash[1]);

@@ -1,6 +1,7 @@
 #include <grpcpp/grpcpp.h>
 #include <iostream>
 #include <thread>
+#include <type_traits>
 #include "command.grpc.pb.h"
 #include "clientRemoteTerminal.h"
 
@@ -91,11 +92,9 @@ std::vector<::NodeDetails> RemoteTerminal::getNodes(){
     auto response_status = _stub->getNodes(&CC, empty, &reply);
     this->updateConnectionState(response_status);
     if(response_status.ok()){
-
         for(int i = 0; i < reply.nodedetails_size(); i++){
-            nodes.push_back(reply.nodedetails(i));
+            nodes.emplace_back(std::move(const_cast<::NodeDetails&>(reply.nodedetails(i))));
         }
     }
-    return std::move(nodes);
+    return nodes;
 }
-

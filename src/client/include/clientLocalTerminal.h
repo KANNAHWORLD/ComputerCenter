@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include "clientRemoteTerminal.h"
 #include "typeCheck.h"
+#include "command.pb.h"
 #include <iostream>
 
 const std::string client_help[] = {
@@ -8,6 +9,7 @@ const std::string client_help[] = {
     {"Register a node with the server. Usage: register <node_ip> <node_port> <node_info>\n"},
     {"Ping the server to check if it is still active. Usage: ping\n"},
     {"start the terminal, to send commands to the server. Usage: startTerm\n"},
+    {"Type get_nodes to view all ndoes"},
     {"Exit the client terminal. Usage: exit\n"},
 };
 
@@ -16,6 +18,7 @@ enum class client_commands_enum {
     register_node,
     ping,
     start_terminal,
+    get_all_nodes,
     exit,
     null,
 };
@@ -25,6 +28,7 @@ const std::unordered_map<std::string_view, client_commands_enum> str_to_commnd {
     {"register", client_commands_enum::register_node},
     {"ping", client_commands_enum::ping},
     {"start_terminal", client_commands_enum::start_terminal},
+    {"get_nodes", client_commands_enum::get_all_nodes},
     {"exit", client_commands_enum::exit},
 };
 
@@ -101,7 +105,18 @@ class LocalTerminal{
         }
 
         template <typename C>
-        int client_exit(C&&) {return 1;} 
+        int client_exit(C&&) {return 1;}
+
+        template <typename C>
+        int client_view_all_nodes(C&&){
+            std::vector<::NodeDetails> all_connected_nodes = CCLI.getNodes();
+            for(int i = 0; i < all_connected_nodes.size(); ++i){
+                std::cout << all_connected_nodes[i].ip() << ' ';
+                std::cout << all_connected_nodes[i].port() << ' ';
+                std::cout << all_connected_nodes[i].information() << '\n';
+            }
+            return 1;
+        }
 
         [[nodiscard]] static inline client_commands_enum get_arg_number(const std::string_view& cmd){
             auto it = str_to_commnd.find(cmd);
@@ -145,6 +160,9 @@ class LocalTerminal{
                 case client_commands_enum::start_terminal:
                     result = client_start_terminal(cmd);
                     break;
+                case client_commands_enum::get_all_nodes:
+                    result = client_start_terminal(cmd);
+                    break;
                 case client_commands_enum::exit:
                     result = client_exit(cmd);
                     break;
@@ -155,6 +173,5 @@ class LocalTerminal{
         }
 
         void start_terminal();
-
 };
 
